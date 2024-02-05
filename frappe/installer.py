@@ -812,10 +812,17 @@ def partial_restore(sql_file_path, verbose=False):
 
 		warn = click.style(
 			"Delete the tables you want to restore manually before attempting"
-			" partial restore operation for PostreSQL databases",
+			" partial restore operation for PostgreSQL databases",
 			fg="yellow",
 		)
+<<<<<<< HEAD
 		warnings.warn(warn)
+=======
+		warnings.warn(warn, stacklevel=2)
+	else:
+		click.secho("Unsupported database type", fg="red")
+		return
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 
 	import_db_from_sql(source_sql=sql_file, verbose=verbose)
 

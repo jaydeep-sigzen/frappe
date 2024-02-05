@@ -122,8 +122,66 @@ def _(msg: str, lang: str | None = None, context: str | None = None) -> str:
 	return translated_string or non_translated_string
 
 
+<<<<<<< HEAD
 def as_unicode(text: str, encoding: str = "utf-8") -> str:
 	"""Convert to unicode if required"""
+=======
+def _lt(msg: str, lang: str | None = None, context: str | None = None):
+	"""Lazily translate a string.
+
+
+	This function returns a "lazy string" which when casted to string via some operation applies
+	translation first before casting.
+
+	This is only useful for translating strings in global scope or anything that potentially runs
+	before `frappe.init()`
+
+	Note: Result is not guaranteed to equivalent to pure strings for all operations.
+	"""
+	return _LazyTranslate(msg, lang, context)
+
+
+@functools.total_ordering
+class _LazyTranslate:
+	__slots__ = ("msg", "lang", "context")
+
+	def __init__(self, msg: str, lang: str | None = None, context: str | None = None) -> None:
+		self.msg = msg
+		self.lang = lang
+		self.context = context
+
+	@property
+	def value(self) -> str:
+		return _(str(self.msg), self.lang, self.context)
+
+	def __str__(self):
+		return self.value
+
+	def __add__(self, other):
+		if isinstance(other, str | _LazyTranslate):
+			return self.value + str(other)
+		raise NotImplementedError
+
+	def __radd__(self, other):
+		if isinstance(other, str | _LazyTranslate):
+			return str(other) + self.value
+		return NotImplementedError
+
+	def __repr__(self) -> str:
+		return f"'{self.value}'"
+
+	# NOTE: it's required to override these methods and raise error as default behaviour will
+	# return `False` in all cases.
+	def __eq__(self, other):
+		raise NotImplementedError
+
+	def __lt__(self, other):
+		raise NotImplementedError
+
+
+def as_unicode(text, encoding: str = "utf-8") -> str:
+	"""Convert to unicode if required."""
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 	if isinstance(text, str):
 		return text
 	elif text is None:
@@ -1212,7 +1270,7 @@ def get_cached_value(doctype: str, name: str, fieldname: str = "name", as_dict: 
 
 	values = [doc.get(f) for f in fieldname]
 	if as_dict:
-		return _dict(zip(fieldname, values))
+		return _dict(zip(fieldname, values, strict=False))
 	return values
 
 
@@ -1556,7 +1614,7 @@ def _load_app_hooks(app_name: str | None = None):
 			raise
 
 		def _is_valid_hook(obj):
-			return not isinstance(obj, (types.ModuleType, types.FunctionType, type))
+			return not isinstance(obj, types.ModuleType | types.FunctionType | type)
 
 		for key, value in inspect.getmembers(app_hooks, predicate=_is_valid_hook):
 			if not key.startswith("_"):
@@ -1808,7 +1866,7 @@ def copy_doc(doc: "Document", ignore_no_copy: bool = True) -> "Document":
 	if not ignore_no_copy:
 		remove_no_copy_fields(newdoc)
 
-	for i, d in enumerate(newdoc.get_all_children()):
+	for d in newdoc.get_all_children():
 		d.set("__islocal", 1)
 
 		for fieldname in fields_to_clear:
@@ -2397,7 +2455,7 @@ def mock(type, size=1, locale="en"):
 	if type not in dir(fake):
 		raise ValueError("Not a valid mock type.")
 	else:
-		for i in range(size):
+		for _ in range(size):
 			data = getattr(fake, type)()
 			results.append(data)
 
@@ -2411,7 +2469,7 @@ def validate_and_sanitize_search_inputs(fn):
 	def wrapper(*args, **kwargs):
 		from frappe.desk.search import sanitize_searchfield
 
-		kwargs.update(dict(zip(fn.__code__.co_varnames, args)))
+		kwargs.update(dict(zip(fn.__code__.co_varnames, args, strict=False)))
 		sanitize_searchfield(kwargs["searchfield"])
 		kwargs["start"] = cint(kwargs["start"])
 		kwargs["page_len"] = cint(kwargs["page_len"])
@@ -2424,7 +2482,7 @@ def validate_and_sanitize_search_inputs(fn):
 	return wrapper
 
 
-from frappe.utils.error import log_error  # noqa: backward compatibility
+from frappe.utils.error import log_error  # noqa
 
 if _tune_gc:
 	# generational GC gets triggered after certain allocs (g0) which is 700 by default.
