@@ -217,8 +217,13 @@ def contact_query(doctype, txt, searchfield, start, page_len, filters):
 	link_name = filters.pop("link_name")
 
 	return frappe.db.sql(
+<<<<<<< HEAD
 		"""select
 			`tabContact`.name, `tabContact`.first_name, `tabContact`.last_name
+=======
+		f"""select
+			`tabContact`.name, `tabContact`.full_name, `tabContact`.company_name
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 		from
 			`tabContact`, `tabDynamic Link`
 		where
@@ -226,12 +231,18 @@ def contact_query(doctype, txt, searchfield, start, page_len, filters):
 			`tabDynamic Link`.parenttype = 'Contact' and
 			`tabDynamic Link`.link_doctype = %(link_doctype)s and
 			`tabDynamic Link`.link_name = %(link_name)s and
-			`tabContact`.`{key}` like %(txt)s
-			{mcond}
+			`tabContact`.`{searchfield}` like %(txt)s
+			{get_match_cond(doctype)}
 		order by
+<<<<<<< HEAD
 			if(locate(%(_txt)s, `tabContact`.name), locate(%(_txt)s, `tabContact`.name), 99999),
 			`tabContact`.idx desc, `tabContact`.name
 		limit %(start)s, %(page_len)s """.format(mcond=get_match_cond(doctype), key=searchfield),
+=======
+			if(locate(%(_txt)s, `tabContact`.full_name), locate(%(_txt)s, `tabContact`.company_name), 99999),
+			`tabContact`.idx desc, `tabContact`.full_name
+		limit %(start)s, %(page_len)s """,
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 		{
 			"txt": "%" + txt + "%",
 			"_txt": txt.replace("%", ""),

@@ -279,14 +279,14 @@ class PostgresDatabase(PostgresExceptionUtil, Database):
 	def create_global_search_table(self):
 		if not "__global_search" in self.get_tables():
 			self.sql(
-				"""create table "__global_search"(
+				f"""create table "__global_search"(
 				doctype varchar(100),
-				name varchar({0}),
-				title varchar({0}),
+				name varchar({self.VARCHAR_LEN}),
+				title varchar({self.VARCHAR_LEN}),
 				content text,
-				route varchar({0}),
+				route varchar({self.VARCHAR_LEN}),
 				published int not null default 0,
-				unique (doctype, name))""".format(self.VARCHAR_LEN)
+				unique (doctype, name))"""
 			)
 
 	def create_user_settings_table(self):
@@ -329,8 +329,8 @@ class PostgresDatabase(PostgresExceptionUtil, Database):
 
 	def has_index(self, table_name, index_name):
 		return self.sql(
-			"""SELECT 1 FROM pg_indexes WHERE tablename='{table_name}'
-			and indexname='{index_name}' limit 1""".format(table_name=table_name, index_name=index_name)
+			f"""SELECT 1 FROM pg_indexes WHERE tablename='{table_name}'
+			and indexname='{index_name}' limit 1"""
 		)
 
 	def add_index(self, doctype: str, fields: list, index_name: str = None):
@@ -359,16 +359,15 @@ class PostgresDatabase(PostgresExceptionUtil, Database):
 		):
 			self.commit()
 			self.sql(
-				"""ALTER TABLE `tab%s`
-					ADD CONSTRAINT %s UNIQUE (%s)"""
-				% (doctype, constraint_name, ", ".join(fields))
+				"""ALTER TABLE `tab{}`
+					ADD CONSTRAINT {} UNIQUE ({})""".format(doctype, constraint_name, ", ".join(fields))
 			)
 
 	def get_table_columns_description(self, table_name):
 		"""Returns list of column and its description"""
 		# pylint: disable=W1401
 		return self.sql(
-			"""
+			f"""
 			SELECT a.column_name AS name,
 			CASE LOWER(a.data_type)
 				WHEN 'character varying' THEN CONCAT('varchar(', a.character_maximum_length ,')')
@@ -387,8 +386,13 @@ class PostgresDatabase(PostgresExceptionUtil, Database):
 					WHERE tablename='{table_name}') b
 				ON SUBSTRING(b.indexdef, '(.*)') LIKE CONCAT('%', a.column_name, '%')
 			WHERE a.table_name = '{table_name}'
+<<<<<<< HEAD
 			GROUP BY a.column_name, a.data_type, a.column_default, a.character_maximum_length;
 		""".format(table_name=table_name),
+=======
+			GROUP BY a.column_name, a.data_type, a.column_default, a.character_maximum_length, a.is_nullable;
+		""",
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 			as_dict=1,
 		)
 
@@ -416,7 +420,7 @@ def modify_query(query):
 
 def modify_values(values):
 	def modify_value(value):
-		if isinstance(value, (list, tuple)):
+		if isinstance(value, list | tuple):
 			value = tuple(modify_values(value))
 
 		elif isinstance(value, int):
@@ -430,7 +434,7 @@ def modify_values(values):
 	if isinstance(values, dict):
 		for k, v in values.items():
 			values[k] = modify_value(v)
-	elif isinstance(values, (tuple, list)):
+	elif isinstance(values, tuple | list):
 		new_values = []
 		for val in values:
 			new_values.append(modify_value(val))

@@ -143,7 +143,18 @@ class Document(BaseDocument):
 			self._fix_numeric_types()
 
 		else:
+<<<<<<< HEAD
 			d = frappe.db.get_value(self.doctype, self.name, "*", as_dict=1, for_update=self.flags.for_update)
+=======
+			get_value_kwargs = {"for_update": self.flags.for_update, "as_dict": True}
+			if not isinstance(self.name, dict | list):
+				get_value_kwargs["order_by"] = None
+
+			d = frappe.db.get_value(
+				doctype=self.doctype, filters=self.name, fieldname="*", **get_value_kwargs
+			)
+
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 			if not d:
 				frappe.throw(
 					_("{0} {1} not found").format(_(self.doctype), self.name), frappe.DoesNotExistError
@@ -855,7 +866,7 @@ class Document(BaseDocument):
 		if not missing:
 			return
 
-		for fieldname, msg in missing:
+		for idx, msg in missing:  # noqa: B007
 			msgprint(msg)
 
 		if frappe.flags.print_messages:
@@ -1216,7 +1227,7 @@ class Document(BaseDocument):
 			doc_to_compare = frappe.get_doc(self.doctype, amended_from)
 
 		version = frappe.new_doc("Version")
-		if is_useful_diff := version.update_version_info(doc_to_compare, self):
+		if version.update_version_info(doc_to_compare, self):
 			version.insert(ignore_permissions=True)
 
 			if not frappe.flags.in_migrate:
@@ -1479,7 +1490,7 @@ class Document(BaseDocument):
 		if file_lock.lock_exists(signature):
 			lock_exists = True
 			if timeout:
-				for i in range(timeout):
+				for _ in range(timeout):
 					time.sleep(1)
 					if not file_lock.lock_exists(signature):
 						lock_exists = False

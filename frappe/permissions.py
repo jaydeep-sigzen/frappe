@@ -115,7 +115,11 @@ def has_permission(
 	meta = frappe.get_meta(doctype)
 
 	if doc:
+<<<<<<< HEAD
 		if isinstance(doc, str):
+=======
+		if isinstance(doc, str | int):
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 			doc = frappe.get_doc(meta.name, doc)
 		perm = get_doc_permissions(doc, user=user, ptype=ptype).get(ptype)
 		if not perm:

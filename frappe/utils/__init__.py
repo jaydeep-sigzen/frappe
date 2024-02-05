@@ -233,7 +233,7 @@ def validate_url(txt, throw=False, valid_schemes=None):
 	# Handle scheme validation
 	if isinstance(valid_schemes, str):
 		is_valid = is_valid and (url.scheme == valid_schemes)
-	elif isinstance(valid_schemes, (list, tuple, set)):
+	elif isinstance(valid_schemes, list | tuple | set):
 		is_valid = is_valid and (url.scheme in valid_schemes)
 
 	if not is_valid and throw:
@@ -390,6 +390,7 @@ def set_default(key, val):
 	return frappe.db.set_default(key, val)
 
 
+<<<<<<< HEAD
 def remove_blanks(d):
 	"""
 	Returns d with empty ('' or None) values stripped
@@ -402,6 +403,13 @@ def remove_blanks(d):
 	for key in empty_keys:
 		del d[key]
 
+=======
+def remove_blanks(d: dict) -> dict:
+	"""Return d with empty ('' or None) values stripped. Mutates inplace."""
+	for k, v in tuple(d.items()):
+		if not v:
+			del d[k]
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 	return d
 
 
@@ -659,7 +667,7 @@ def is_markdown(text):
 
 def is_a_property(x) -> bool:
 	"""Get properties (@property, @cached_property) in a controller class"""
-	return isinstance(x, (property, functools.cached_property))
+	return isinstance(x, property | functools.cached_property)
 
 
 def get_sites(sites_path=None):
@@ -902,7 +910,7 @@ def get_safe_filters(filters):
 	try:
 		filters = json.loads(filters)
 
-		if isinstance(filters, (int, float)):
+		if isinstance(filters, int | float):
 			filters = frappe.as_unicode(filters)
 
 	except (TypeError, ValueError):

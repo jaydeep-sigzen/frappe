@@ -48,7 +48,13 @@ def patch_request_header(key, *args, **kwargs):
 
 
 class ThreadWithReturnValue(Thread):
+<<<<<<< HEAD
 	def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+=======
+	def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, *, site=None):
+		if kwargs is None:
+			kwargs = {}
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 		Thread.__init__(self, group, target, name, args, kwargs)
 		self._return = None
 

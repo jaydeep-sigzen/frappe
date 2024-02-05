@@ -275,6 +275,7 @@ class TestOAuth20(unittest.TestCase):
 		self.assertTrue(check_valid_openid_response(response_dict.get("access_token")[0]))
 
 	def test_openid_code_id_token(self):
+<<<<<<< HEAD
 		client = update_client_for_auth_code_grant(self.client_id)
 
 		session = requests.Session()
@@ -282,6 +283,9 @@ class TestOAuth20(unittest.TestCase):
 
 		redirect_destination = None
 
+=======
+		update_client_for_auth_code_grant(self.client_id)
+>>>>>>> 26ae0f3460 (fix: ruff fixes)
 		nonce = frappe.generate_hash()
 
 		# Go to Authorize url
