@@ -226,7 +226,9 @@ def insert_event_jobs(events: list, event_type: str) -> list:
 	return event_jobs
 
 
-def insert_single_event(frequency: str, event: str, cron_format: str = None):
+def insert_single_event(
+	frequency: str, event: str, cron_format: str = None, pass_schedule_info_as_arguments: bool = False
+):
 	cron_expr = {"cron_format": cron_format} if cron_format else {}
 
 	try:
@@ -240,6 +242,7 @@ def insert_single_event(frequency: str, event: str, cron_format: str = None):
 			"method": event,
 			"cron_format": cron_format,
 			"frequency": frequency,
+			"pass_schedule_info_as_arguments": pass_schedule_info_as_arguments,
 		}
 	)
 
