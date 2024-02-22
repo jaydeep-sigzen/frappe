@@ -42,6 +42,7 @@ class ScheduledJobType(Document):
 		last_execution: DF.Datetime | None
 		method: DF.Data
 		next_execution: DF.Datetime | None
+		pass_schedule_info_as_arguments: DF.Check
 		server_script: DF.Link | None
 		stopped: DF.Check
 	# end: auto-generated types
@@ -128,7 +129,12 @@ class ScheduledJobType(Document):
 				if script_name:
 					frappe.get_doc("Server Script", script_name).execute_scheduled_method()
 			else:
-				frappe.get_attr(self.method)()
+				method = frappe.get_attr(self.method)
+				if self.pass_schedule_info_as_arguments:
+					method(self.frequency, self.cron_format)
+				else:
+					method()
+
 			frappe.db.commit()
 			self.log_status("Complete")
 		except Exception:
