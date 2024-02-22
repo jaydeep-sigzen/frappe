@@ -256,6 +256,8 @@ def insert_single_event(
 			doc.delete()
 			doc.insert()
 
+	return doc
+
 
 def clear_events(all_events: list):
 	for event in frappe.get_all("Scheduled Job Type", fields=["name", "method", "server_script"]):
